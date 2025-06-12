@@ -2,8 +2,8 @@
 <html class="fontawesome-i2svg-active fontawesome-i2svg-complete">
 <head>
   <meta charset="utf-8">
-  <meta name="description" content="A reinforcement learning framework where LLMs generate their own supervision signal via majority voting">
-  <meta name="keywords" content="LLM, Reasoning, Self-Improvement">
+  <meta name="description" content="SPEED-RL accelerates reinforcement learning training of reasoning language models by selectively training on prompts with optimal learning signals.">
+  <meta name="keywords" content="LLM, Reasoning, Curriculum-Learning">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning</title>
 
@@ -175,6 +175,7 @@
     </div>
   </section>
 
+
 <section class="section">
   <div class="container is-max-desktop">
     <div class="columns is-centered">
@@ -185,15 +186,14 @@
   <li>Traditional RL training often expends most of the compute resources on prompts with low learning signals (pass rates near 0% or 100%), which have low <em>signal-to-noise ratio</em> (SNR) and which may make up most of the training dataset.</li>
   <li><strong>SPEED</strong> efficiently identifies and excludes these low-SNR prompts <strong>before</strong> creating training batches for the RL trainer.</li>
   <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR ones).</li>
-  <li>SPEED achieves training speedups <strong>from 2x to 6x</strong> across various benchmarks and training configurations.</li>
-  <li>SPEED is compatible with Rule-based RL algorithms like GRPO, REINFORCE, RLOO, and DAPO.</li>
+  <li>SPEED is compatible with Rule-based RL algorithms like GRPO, REINFORCE, RLOO, and DAPO, achieving average training speedups <strong>from 2x to 6x</strong> over them.</li>
 </ul>
 <div class="container is-max-desktop">
   <div class="hero-body">
     <figure>
       <img src="./static/images/teaser_figure.png" alt="Teaser image." class="teaser-image">
       <figcaption>
-         <strong>Figure 1:</strong> SPEED expends some compute (red region, left figure) to identify and exclude low-signal (low-SNR) prompts from the training batch, ensuring the majority of compute is effectively utilized on informative prompts. This yields an average 4× speedup across various benchmarks and training configurations (right figure; see paper for details).
+         <strong>Figure 1:</strong> SPEED expends some compute (left figure, red region) to identify and exclude low-signal (low-SNR) prompts from the training batch, ensuring the majority of compute is effectively utilized on informative prompts. This yields an average 4× speedup across various benchmarks and training configurations (right figure; see paper for details).
       </figcaption>
     </figure>
   </div>
@@ -214,8 +214,10 @@
         <figure>
         <img src="./static/images/passrate_distribution_inference_time.png" alt="Teaser image." class="teaser-image">
          <figcaption>
-         <strong>Figure 2:</strong> Pass rate distribution of 1000 samples in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). 
-         Right: Average per-step inference and training times while running RLOO on the Qwen2.5-Math-7B model.
+         <strong>Figure 2:</strong> Pass rate distribution in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). <br>
+         Most of the prompts have close to zero pass rate, i.e., they are too difficult for the model. <br>
+         Right: Average per-step inference and training times while running RLOO on the Qwen2.5-Math-7B model. 
+         <br> More than 2/3 of the training time is spent on inference.
          </figcaption>
         </figure>
 
@@ -236,17 +238,20 @@
         Consequently, we can exclude them.
 
         However, reliably identifying informative prompts in a general and computationally efficient manner is challenging.
-        <ul>
-          <li><a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a> removes prompts with a 0% or 100% empircal pass rate after generating a large number of completions for each prompt.
-            This becomes computationally infeasible for large datasets as the training cost is dominated by the inference phase.</li>
-          <li><strong>SPEED (Our proposed method)</strong> efficiently identifies and excludes low-SNR prompts to avoid these high inference costs and achieve <strong>substantial real-time speedups</strong>.</li>
-        </ul>
+        For example, <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a> removes prompts with a 0% or 100% empircal pass rate after generating a large number of completions for each prompt.
+        However, this does not fully realize the potential benefits of curriculum learning, as it does not reduce the inference cost on the dataset, which dominates the training time.
+        
+        <br><br>
+
+        <strong>SPEED</strong> (our proposed method) efficiently identifies and excludes low-SNR prompts <strong>before</strong> performing full inference, avoiding the most time-consuming component of training—inference—leading to <strong>substantial real-time speedups</strong>.
 
         <br><br>
 
         <h2 class="title is-3" id="srt">SPEED-RL: Algorithm Design</h2>
         <div class="content has-text-justified">
-        We introduce <strong>Selective Prompting with Efficient Estimation of Difficulty (SPEED)</strong>, which implements a curriculum learning strategy that efficiently screens prompts to identify those with intermediate pass rates—thus maximizing the signal-to-noise ratio (SNR)—without full inference.
+        We introduce <strong>Selective Prompting with Efficient Estimation of Difficulty (SPEED)</strong>, which implements a curriculum learning strategy that efficiently screens prompts to identify those with intermediate pass rates—thus maximizing the signal-to-noise ratio (SNR)—without performing full inference on them.
+        (For more details on the Signal-to-Noise Ratio, see the end of the blog.) <br>
+        SPEED breaks down inference into two phases:
         <ul>
           <li>
             <strong>Screening Phase:</strong> Generate a small number (e.g., <code>N<sub>init</sub> = 4</code>) of completions for each prompt. Prompts clearly at extremes (0% or 100%) pass rate are immediately excluded.
@@ -256,7 +261,9 @@
           </li>
         </ul>
 
-      This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics. Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO, and so on.
+      This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and the preliminary screening phase for future prompts within one single call to the inference engine (e.g., vLLM).
+      See the paper for additional technical details.
+      Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO.
 
       <figure>
         <img src="./static/images/algorithm_box.png" alt="Algorithm." class="teaser-image">
@@ -280,7 +287,7 @@
           </li>
         </ul>
         
-        Empirically, SPEED variants substantially accelerate the training compared to the baseline methods for <strong>2x - 6x times</strong>.
+        Empirically, SPEED variants substantially accelerate the training compared to the baseline methods by <strong>2x - 6x times</strong>.
         For detailed empirical results, please refer to our full paper.
         </div>
 
@@ -291,14 +298,14 @@
            </figcaption>
           </figure>
           
-          <figure>
+          <!-- <figure>
             <img src="./static/images/main_table.png" alt="main table." class="teaser-image">
              <figcaption>
              <strong>Table 1:</strong> Wall-clock training hours needed for each model to reach a target accuracy on its respective benchmark. For the Qwen-Math-1.5B model, the targets are 0.30 on DAPO-1k, 0.70 on MATH500, 0.4 on AMC2023, and 0.10 on AIME. For the larger Qwen2.5-Math-7B model, the thresholds increase to 0.45, 0.80, 0.55, and 0.18 for the same datasets, respectively. Validation time and checkpoint-saving overhead are excluded. Values in parentheses give the corresponding wall-clock speed-ups.
              The dagger means the performance has not reached the threshold during the entire training process. 
              The average speedups reported across benchmarks and training configurations are computed as the simple arithmetic mean of individual speedup values.
              </figcaption>
-            </figure>
+            </figure> -->
 
         <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
         <div class="content has-text-justified">
@@ -308,9 +315,9 @@
         This also applies to the prompts with pass rates close to these extremes. 
         </p>
         <p>
-        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> \(J(\theta)\) to compute the updated model parameter.
-        We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. 
-        A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
+        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> for \(J(\theta)\) to update the model's parameters.
+        We quantify the information value through the <strong>Signal-to-Noise Ratio (SNR)</strong>—defined as the ratio between the squared norm of the gradient estimator and its variance. 
+        A corollary of the standard analysis of stochastic gradient descent shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
         More specifically, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
         \[
         \mathbb{E}\left[J(\theta^+)\right] - J(\theta) \geq
@@ -319,14 +326,14 @@
         Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
         </p>
         <p>
-        In fact, the pass rate of a prompt is tightly correlated with its SNR.
-        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem. 
+        In fact, we prove that <strong> the pass rate of a prompt is tightly correlated with its SNR.</strong>
+        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus yield little improvement according to the above expression. 
         </p>
         <p>
         <strong>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</strong>
         Fix a prompt. Let \( p \) denote the (expected) pass rate (i.e., the probability that the question is correctly solved) of prompt under the current policy.
         We generate \( N \) completions for the prompt independently.
-        The SNR of the stochastic gradient estimator for \( N \geq 3 \) and \( p < 1/4 \) or \( p > 3/4 \) satisfies the bound:
+        The SNR of the stochastic gradient estimator (when \( N \geq 3 \) and \( p < 1/4 \) or \( p > 3/4 \)) satisfies the bound:
         \[
         \text{SNR} \leq 4N \cdot p (1 - p)
         \]
@@ -336,18 +343,13 @@
         \lim_{p \to 0} \text{SNR} = 0
         \]
       </p>
-        This result, together with the fact that the pass rate is tightly correlated with the SNR, is significant in several ways: 
-        <ul>
-          <li>
-            It explicitly quantifies how much informative signal (relative to noise) a single training step provides as a direct function of pass rate.
-          </li>
-          <li>
-            It confirms an important intuition: prompts with very low pass rates (near 0%) or very high pass rates (near 100%) both yield vanishing SNR. Such prompts provide negligible useful training signal while potentially introducing detrimental variance in parameter updates.
-          </li>
-          <li>
-            It suggests that <strong>optimal curricula must explicitly prioritize intermediate-difficulty prompts</strong> to maximize learning signal and effectiveness.
-          </li>
-        </ul>
+        This result is significant:
+    
+            It establises that increasing the number of samples \( N \) increases the SNR at a linear rate, as we'd expect, but in a way proportional to the pass rate \( p \) when this is close to zero (similar considerations apply when \( p \) is close to \( 100\% \)). 
+            When the pass rate is close to zero, we have the upper bound \( \text{SNR} < Np \), while the cost of inference is proportional to \( p \).
+            This suggests that the <strong>``utility / compute cost" </strong> ratio is at most \( p \), justifying the idea of saving compute on prompts with \(p \approx 0\% \). 
+            Similar considerations apply for prompts with pass rate around \( 100\% \). 
+   
 
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
