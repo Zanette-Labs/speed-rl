@@ -100,14 +100,14 @@
   <li><strong>SPEED</strong> efficiently identifies and excludes these low-SNR prompts <strong>before</strong> creating training batches for the RL trainer.</li>
   <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR ones).</li>
   <li>SPEED achieves training speedups <strong>from 2x to 6x</strong> across various benchmarks and training configurations.</li>
-  <li>SPEED is compatible with RL algorithms like GRPO, REINFORCE, RLOO, and DAPO.</li>
+  <li>SPEED is compatible with Rule-based RL algorithms like GRPO, REINFORCE, RLOO, and DAPO.</li>
 </ul>
 <div class="container is-max-desktop">
   <div class="hero-body">
     <figure>
       <img src="./static/images/teaser_figure.png" alt="Teaser image." class="teaser-image">
       <figcaption style="text-align: center; font-style: italic; margin-top: 0.5em;">
-         <br> SPEED expends some compute (red region, left figure) to identify and exclude low-signal (low-SNR) prompts from the training batch, ensuring the majority of compute is effectively utilized on informative prompts. 
+         <br> <strong>Figure 1:</strong> SPEED expends some compute (red region, left figure) to identify and exclude low-signal (low-SNR) prompts from the training batch, ensuring the majority of compute is effectively utilized on informative prompts. 
          This yields an average 4× speedup across various benchmarks and training configurations (right figure; see paper for details).
       </figcaption>
     </figure>
@@ -135,7 +135,7 @@
         <figure>
         <img src="./static/images/passrate_distribution_inference_time.png" alt="Teaser image." class="teaser-image">
          <figcaption style="text-align: center; font-style: italic; margin-top: 0.5em;">
-         <br> Pass rate distribution of 1000 samples in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). 
+         <br> <strong>Figure 2:</strong> Pass rate distribution of 1000 samples in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). 
          Right: Average per-step inference and training times while running RLOO on the Qwen2.5-Math-7B model.
          </figcaption>
         </figure>
@@ -160,7 +160,7 @@
         <ul>
           <li><a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a> removes prompts with a 0% or 100% empircal pass rate after generating a large number of completions for each prompt.
             This becomes computationally infeasible for large datasets as the training cost is dominated by the inference phase.</li>
-          <li><strong>SPEED</strong> efficiently identifies and excludes low-SNR prompts to avoid these high inference costs and achieve <strong>substantial real-time speedups</strong>.</li>
+          <li><strong>SPEED (Our proposed method)</strong> efficiently identifies and excludes low-SNR prompts to avoid these high inference costs and achieve <strong>substantial real-time speedups</strong>.</li>
         </ul>
 
         <br><br>
@@ -177,21 +177,33 @@
           </li>
         </ul>
       </div>
-      This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics.
+
+      This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics. Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO, and so on.
       </div>
         
       <br><br>
-      
         <h2 class="title is-3" id="srt">Experiments</h2>
-        <div class="content has-text-justified">
-        SPEED integrates seamlessly with popular RL algorithms, including RLOO, GRPO, and DAPO. 
-        We demonstrate SPEED's efficacy by evaluating SPEED-RLOO and SPEED-DAPO variants on the <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener noreferrer">DeepScaleR</a> dataset. 
-        Empirically, SPEED substantially accelerates training compared to the baseline methods (RLOO on top and DAPO at the bottom) 
+        <div class="content has-text-justified"> 
+        We demonstrate SPEED's efficacy by comparing the <strong>wall-clock time</strong> to achieve certain target performance for baseline RL algorithms and for SPEED variants. 
+
+        <ul>
+          <li>
+            Baseline: <a href="https://arxiv.org/abs/2402.14740" target="_blank" rel="noopener noreferrer">RLOO</a> and <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>. We compare RLOO vs SPEED-RLOO, and DAPO vs SPEED-DAPO.
+          </li>
+          <li>
+            Training Dataset: <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener noreferrer">DeepScaleR</a>, <a href="https://huggingface.co/datasets/AI-MO/NuminaMath-TIR" target="_blank" rel="noopener noreferrer">NuminaMath</a>, and <a href="https://huggingface.co/datasets/BytedTsinghua-SIA/DAPO-Math-17k" target="_blank" rel="noopener noreferrer">DAPO-17k</a> (1k held-out set excluded)
+          </li>
+          <li>
+            Benchmarks: 1k held-out set from DAPO-17k, MATH500, AMC23, AIME2024, and AIME 2025. See <a href="" target="_blank" rel="noopener noreferrer">here</a>.
+          </li>
+        </ul>
+        
+        Empirically, SPEED variants substantially accelerate the training compared to the baseline methods for <strong>2x - 6x times</strong>.
         For detailed empirical results, please refer to our full paper.
-      </div>
+        </div>
 
         <center>
-          <img src="./static/images/srt_training_dynamics.png" alt="srt_training_dynamics" width="100%" class="srt_training_dynamics">
+          <img src="./static/images/main_results.png" alt="main_results" width="100%" class="main_results">
         </center>
 
         <h2 class="title is-3" id="srt">An Information-Theoretic Perspective</h2>
