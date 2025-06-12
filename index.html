@@ -206,66 +206,24 @@
           <img src="./static/images/main_results.png" alt="main_results" width="100%" class="main_results">
         </center>
 
-        <h2 class="title is-3" id="srt">An Information-Theoretic Perspective</h2>
+        <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
         <div class="content has-text-justified">
 
-<p>Another contribution of our work is establishing an information-theoretic justification for training on intermediate-difficulty prompts. 
-  Recall that prompts with 0% or 100% pass rates yield zero gradient, prompting an exploration into prompts with pass rates close to these extremes. 
-  We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio of the squared expected gradient magnitude to its variance:
+        Theoretically, we contribute an information-theoretic justification for training on intermediate-difficulty prompts. 
+        Recall that prompts with 0% or 100% pass rates yield zero advantage and hence zero gradient.
+        This also applies to the prompts with pass rates close to these extremes. 
 
-  <p>
-  Typically, one estimates the policy gradient via Monte Carlo samples:
-</p>
+        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)) and \(\widehat{\nabla_{\theta} J(x)}(\theta)\) be the policy gradient estimator.
+        We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. More formally, let \(\theta\) be the model parameter and \(\theta + \widehat{\nabla_{\theta} J(x)}(\theta)\) be the updated model parameter. Then, given \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
+        \[
+        \mathbb{E}\left[J(x, \theta^+)\right] - J(x, \theta) \geq
+        \frac{1}{2} \left\| \nabla_{\theta} J(x, \theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}}\right).
+        \]
 
-\[
-\widehat{\nabla_{\theta} J(x)}(\theta) = 
-\frac{1}{N} \sum_{i=1}^N \widehat{A}(y_i) \cdot \nabla_\theta \log \pi(y_i \mid x), \quad \text{where} \quad
-y_1,\ldots,y_N \overset{\text{i.i.d.}}{\sim} \pi(\cdot \mid x).
-\]
+        Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
+        In fact, the pass rate of a prompt is tightly correlated with its SNR.
+        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem.
 
-<p>
-  Here, \( \widehat{A}(y_i) \) is the advantage estimate for response \( y_i \). For example, in our experiments, we adopt the RLOO estimator from Ahmadian et al. (2024):
-</p>
-
-\[
-\widehat{A}(y_i) := r(y_i) - \frac{1}{N-1}\sum_{j \ne i} r(y_j).
-\]
-
-<p>
-  With this definition, the empirical policy-gradient is an unbiased estimator of the true gradient. The <strong>SNR</strong> is then defined as the ratio between the squared norm of the gradient estimator and its variance:
-</p>
-
-\[
-\text{SNR}(\theta) := \frac{\left\|\mathbb{E} \left[\widehat{\nabla_{\theta} J(x)}(\theta)\right] \right\|^2}
-{\mathbb{E}\left[\left\|\widehat{\nabla_{\theta} J(x)}(\theta) - \mathbb{E} \left[\widehat{\nabla_{\theta} J(x)}(\theta)\right] \right\|^2\right]}.
-\]
-
-<p>
-  Here, the SNR is a function of the model parameter \( \theta \) and prompt \( x \).
-  It quantifies the amount of information carried by a stochastic gradient and governs the expected improvement of methods based on stochastic gradients—such as RLOO, PPO, REINFORCE, etc.
-</p>
-
-<h3>Fact 1</h3>
-<p>
-  Consider the one-step stochastic gradient update \( \theta^+ = \theta + \widehat{\nabla_{\theta} J(x)}(\theta) \), where the empirical policy gradient is unbiased. Assume \( J(x, \theta) \) is 1-smooth. Then:
-</p>
-
-\[
-\mathbb{E}\left[J(x, \theta^+)\right] - J(x, \theta) \geq
-\frac{1}{2} \left\| \nabla_{\theta} J(x, \theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}(\theta)}\right),
-\]
-
-<p>
-  where SNR is defined as above.
-</p>
-
-<p>
-  This result follows from standard SGD analysis on smooth functions (see Duchi, 2018; Bernstein et al., 2018).
-</p>
-
-<p>
-  Thus, if the SNR approaches zero, variance dominates and little improvement is expected from a single step. As the SNR increases toward infinity, we recover the fast convergence behavior of deterministic gradient methods.
-</p>
 
 <p>
   A straightforward technique to increase the <strong>SNR</strong> is to simply increase the number of sampled rollouts.
