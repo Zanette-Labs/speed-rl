@@ -193,9 +193,9 @@
     <div class="columns is-centered">
       <div class="column is-full-width">
         <div class="content has-text-justified">
-          We introduced <strong>SPEED</strong>, an online curriculum learning framework that accelerates reinforcement learning (RL) training for large reasoning models by training on prompts with a high learning signal.
+          We introduce <strong>SPEED</strong>, an online curriculum learning framework to accelerate reinforcement learning (RL) training of large reasoning models by training on prompts with high learning signal.
   <ul>
-  <li>Traditional RL training often expends most of the compute resources on prompts with low learning signals (pass rates near 0% or 100%), which have low <em>signal-to-noise ratio</em> (SNR) and which may make up most of the training dataset.</li>
+  <li>Traditional RL training often expends most of the compute resources on prompts with low learning signals (pass rates near 0% or 100%), which have low <em>signal-to-noise ratio</em> (SNR), a notion formalized later in the blog post.</li>
   <li><strong>SPEED</strong> efficiently identifies and excludes these low-SNR prompts <strong>before</strong> creating training batches for the RL trainer.</li>
   <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR ones).</li>
   <li>SPEED is compatible with Rule-based RL algorithms like GRPO, REINFORCE, RLOO, and DAPO, achieving average training speedups <strong>from 2x to 6x</strong> over them.</li>
@@ -216,10 +216,10 @@
         <h2 class="title is-3" id="srt">Introduction</h2>
         <div class="content has-text-justified">
         Training large language models (LLMs) with reinforcement learning (RL) against verifiable rewards significantly enhances their reasoning capabilities. 
-        However, such methods remain computationally expensive, primarily due to inefficient uniform sampling of training prompts and the heavy inference costs associated.
+        However, such methods remain computationally expensive, primarily due to inefficient uniform sampling of training prompts and the associated heavy inference costs.
         <ul>
           <li>In typical datasets (e.g., that used in <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>), many prompts are either trivially easy or excessively difficult relative to the model's current training state.</li>
-          <li>LLMs spend most of the training time on inference, even generating all-correct or all-incorrect completions for those prompts that are either trivially easy or excessively difficult.</li>
+          <li>LLMs spend most of the training time on inference, generating all-correct or all-incorrect completions for those prompts that are either trivially easy or excessively difficult.</li>
         </ul>
 
         
@@ -234,7 +234,7 @@
         </figure>
 
         Intuitively, if the model consistently succeeds or fails, it learns little.
-        Formally, prompts with pass rates near 0% or 100% produce zero gradients since the advantage function approaches zero (e.g., REINFORCE gradient updates) and does not affect the gradient estimate. This can be formally shown as follows:
+        Formally, prompts with pass rates near 0% or 100% produce zero gradients since the advantage function approaches zero. This can be formally shown as follows:
         <p>
         \[
         \nabla_{\theta} J_\text{prompt}(\theta) =
@@ -247,11 +247,11 @@
         \quad\quad \text{if the pass rate is } 0\% \text{ or } 100\%.
         \]
         </p> 
-        Consequently, we can exclude them.
+        Consequently, we can exclude them. <br> <br> 
 
         However, reliably identifying informative prompts in a general and computationally efficient manner is challenging.
         For example, <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a> removes prompts with a 0% or 100% empircal pass rate after generating a large number of completions for each prompt.
-        However, this does not fully realize the potential benefits of curriculum learning, as it does not reduce the inference cost on the dataset, which dominates the training time.
+        But such approach does not fully realize the potential benefits of curriculum learning, as it does not reduce the inference cost on the dataset, which dominates the training time.
         
         <br><br>
 
@@ -322,13 +322,15 @@
         <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
         <div class="content has-text-justified">
         <p>
-        Theoretically, we contribute an information-theoretic justification for training on intermediate-difficulty prompts. 
+        We contribute with an <strong> information-theoretic </strong> justification for training on intermediate-difficulty prompts. 
         Recall that prompts with 0% or 100% pass rates yield zero advantage and hence zero gradient.
-        This also applies to the prompts with pass rates close to these extremes. 
+        What happens on prompts with pass rates close to these extremes?
         </p>
         <p>
-        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> for \(J(\theta)\) to update the model's parameters.
-        We quantify the information value through the <strong>Signal-to-Noise Ratio (SNR)</strong>—defined as the ratio between the squared norm of the gradient estimator and its variance. 
+        Let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> for \(J(\theta)\) to update the model's parameters.
+        We quantify the information value through the <strong>Signal-to-Noise Ratio (SNR)---defined as the ratio between the squared norm of the gradient estimator and its variance. </strong> 
+       </p>
+        <p>
         A corollary of the standard analysis of stochastic gradient descent shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
         More specifically, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
         \[
@@ -358,8 +360,8 @@
         This result is significant:
     
             It establises that increasing the number of samples \( N \) increases the SNR at a linear rate, as we'd expect, but in a way proportional to the pass rate \( p \) when this is close to zero (similar considerations apply when \( p \) is close to \( 100\% \)). 
-            When the pass rate is close to zero, we have the upper bound \( \text{SNR} < Np \), while the cost of inference is proportional to \( p \).
-            This suggests that the <strong>``utility / compute cost" </strong> ratio is at most \( p \), justifying the idea of saving compute on prompts with \(p \approx 0\% \). 
+            When the pass rate is close to zero, we have the upper bound \( \text{SNR} < Np \), while the cost of inference is proportional to \( N \).
+            This suggests that the <strong>``utility / compute cost" </strong> ratio of a prompt is at most its pass rate \( p \), justifying the idea of saving compute on prompts with \(p \approx 0\% \). 
             Similar considerations apply for prompts with pass rate around \( 100\% \). 
    <br><br>
 
