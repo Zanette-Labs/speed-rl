@@ -81,6 +81,18 @@
       font-size: 0.95rem;
       padding: 2rem 1rem;
     }
+    pre {
+      display: block;           /* ensure it’s a block element */
+      overflow-x: auto;         /* add a horizontal scrollbar if needed */
+      padding: 1rem;            /* match your existing padding */
+      background: #f5f5f5;      /* match your existing background */
+      border-radius: 4px;       /* match your existing radius */
+      white-space: pre;         /* preserve all spacing */
+      word-break: normal;       /* don’t break words */
+    }
+    pre code {
+      display: block;           /* so code fills the pre */
+    }
   </style>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -173,7 +185,7 @@
 </div>
 <p>
         </div>
-        
+
         <h2 class="title is-3" id="srt">Introduction</h2>
         <div class="content has-text-justified">
         Training large language models (LLMs) with reinforcement learning (RL) against verifiable rewards significantly enhances their reasoning capabilities. 
