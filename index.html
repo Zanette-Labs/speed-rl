@@ -73,7 +73,7 @@
                   </a>
               </span>
               <span class="link-block">
-                <a href="https://huggingface.co/collections/ftajwar/self-rewarding-llm-training-6835218091832c3664176553" class="external-link button is-normal is-rounded is-dark">
+                <a href="https://huggingface.co/collections/rqzhang/speed-rl-684a72dfb24ea72540c32fa1" class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <svg class="svg-inline--fa fa-database fa-w-14" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="database" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg=""><path fill="currentColor" d="M448 73.143v45.714C448 159.143 347.667 192 224 192S0 159.143 0 118.857V73.143C0 32.857 100.333 0 224 0s224 32.857 224 73.143zM448 176v102.857C448 319.143 347.667 352 224 352S0 319.143 0 278.857V176c48.125 33.143 136.208 48.572 224 48.572S399.874 209.143 448 176zm0 160v102.857C448 479.143 347.667 512 224 512S0 479.143 0 438.857V336c48.125 33.143 136.208 48.572 224 48.572S399.874 369.143 448 336z"></path></svg><!-- <i class="fas fa-database"></i> Font Awesome fontawesome.com -->
                   </span>
@@ -193,7 +193,7 @@
             Training Dataset: <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener noreferrer">DeepScaleR</a>, <a href="https://huggingface.co/datasets/AI-MO/NuminaMath-TIR" target="_blank" rel="noopener noreferrer">NuminaMath</a>, and <a href="https://huggingface.co/datasets/BytedTsinghua-SIA/DAPO-Math-17k" target="_blank" rel="noopener noreferrer">DAPO-17k</a> (1k held-out set excluded)
           </li>
           <li>
-            Benchmarks: 1k held-out set from DAPO-17k, MATH500, AMC23, AIME2024, and AIME 2025. See <a href="" target="_blank" rel="noopener noreferrer">here</a>.
+            Benchmarks: 1k held-out set from DAPO-17k, MATH500, AMC23, AIME2024, and AIME 2025. See <a href="https://huggingface.co/collections/rqzhang/speed-rl-684a72dfb24ea72540c32fa1" target="_blank" rel="noopener noreferrer">here</a>.
           </li>
         </ul>
         
@@ -224,28 +224,30 @@
         Recall that prompts with 0% or 100% pass rates yield zero advantage and hence zero gradient.
         This also applies to the prompts with pass rates close to these extremes. 
 
-        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)) and \(\widehat{\nabla_{\theta} J(x)}(\theta)\) be the policy gradient estimator.
-        We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. More formally, let \(\theta\) be the model parameter and \(\theta + \widehat{\nabla_{\theta} J(x)}(\theta)\) be the updated model parameter. Then, given \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
+        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> \(J(\theta)\) to compute the updated model parameter.
+        We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. 
+        A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
+        More formally, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
         \[
-        \mathbb{E}\left[J(x, \theta^+)\right] - J(x, \theta) \geq
-        \frac{1}{2} \left\| \nabla_{\theta} J(x, \theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}}\right).
+        \mathbb{E}\left[J(\theta^+)\right] - J(\theta) \geq
+        \frac{1}{2} \left\| \nabla_{\theta} J(\theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}}\right).
         \]
 
         Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
         In fact, the pass rate of a prompt is tightly correlated with its SNR.
         In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem. 
 
-        <h3>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</h3>
+        <strong>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</strong>
         Fix a prompt. Let \( p \) denote the (expected) pass rate (i.e., the probability that the question is correctly solved) of prompt under the current policy.
         We generate \( N \) completions for the prompt independently.
         The SNR of the stochastic gradient estimator for \( N \geq 3 \) and \( p < \frac{1}{4} \) or \( p > \frac{3}{4} \) satisfies the bound:
         \[
-        \text{SNR} \leq 4N \cdot p_x(\theta) \cdot (1 - p_x(\theta))
+        \text{SNR} \leq 4N \cdot p (1 - p)
         \]
         Moreover, for fixed \( N \), we have:
         \[
-        \lim_{p_x(\theta) \to 1} \text{SNR} =
-        \lim_{p_x(\theta) \to 0} \text{SNR} = 0
+        \lim_{p \to 1} \text{SNR} =
+        \lim_{p \to 0} \text{SNR} = 0
         \]
 
         This result, together with the fact that the pass rate is tightly correlated with the SNR, is significant in several ways: 
@@ -257,7 +259,7 @@
             It confirms an important intuition: prompts with very low pass rates (near 0%) or very high pass rates (near 100%) both yield vanishing SNR. Such prompts provide negligible useful training signal while potentially introducing detrimental variance in parameter updates.
           </li>
           <li>
-            It suggests that optimal curricula must explicitly prioritize intermediate-difficulty prompts to maximize learning signal and effectiveness.
+            It suggests that <strong>optimal curricula must explicitly prioritize intermediate-difficulty prompts</strong> to maximize learning signal and effectiveness.
           </li>
         </ul>
   
