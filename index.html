@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning</title>
 
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="./static/css/bulma.min.css">
   <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
   <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
@@ -14,45 +15,54 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
 
-  <!-- Custom formatting only: fonts and sizes -->
+  <!-- Custom fonts & responsive typography -->
   <style>
+    /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap');
-    /* html {
-      font-family: 'STIX Two Text', serif;
-      font-size: 18px;
-      line-height: 1.6;
-      background-color: #fafafa;
-      color: #333;
-    } */
+
+    /* Root defaults (desktop / large screens) */
     html {
       font-family: 'Open Sans', sans-serif;
-      font-size: 18px;
+      font-size: 18px;   /* base size */
       line-height: 1.6;
       background-color: #fafafa;
       color: #333;
     }
+
+    /* Mobile‑first adjustments */
+    @media (max-width: 767px) {
+      html { font-size: 15px; }            /* down‑scale all rem units */
+      h1.publication-title { font-size: 2rem !important; }
+      h2.title.is-3       { font-size: 1.5rem !important; }
+      .content,
+      .publication-authors,
+      .publication-links a span,
+      .link-block span    { font-size: 1rem; }
+      figcaption          { font-size: 0.85rem; }
+      pre code            { font-size: 0.9rem; }
+      footer.footer       { font-size: 0.85rem; }
+    }
+
+    @media (max-width: 480px) {
+      html { font-size: 14px; }            /* extra small screens */
+    }
+
     body {
       background-color: white;
       margin: 0;
       padding: 0;
     }
+
+    /* Headings */
     h1.publication-title,
     h2.title.is-3 {
       font-family: 'Playfair Display', serif !important;
     }
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-    h1.publication-title {
-      font-size: 3rem !important;
-      font-family: 'Playfair Display', serif !important;
-    }
-    h2.title.is-3 {
-      font-size: 2rem !important;
-      font-family: 'Playfair Display', serif !important;
-    }
+
+    h1.publication-title { font-size: 3rem !important; }
+    h2.title.is-3       { font-size: 2rem !important; }
+
+    /* Text blocks */
     .content,
     .publication-authors,
     .publication-links a span,
@@ -60,13 +70,12 @@
       font-size: 1.125rem;
       font-family: 'Open Sans', sans-serif;
     }
-    .hero {
-      padding: 2.5rem 1rem;
-      background-color: #f0f0f0;
-    }
-    .section {
-      padding: 3rem 0;
-    }
+
+    /* Layout & components */
+    .container { max-width: 960px; margin: 0 auto; padding: 0 1rem; }
+    .hero      { padding: 2.5rem 1rem; background-color: #f0f0f0; }
+    .section   { padding: 3rem 0; }
+
     .teaser-image {
       max-width: 100%;
       height: auto;
@@ -75,6 +84,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
     figcaption {
       font-size: 0.95rem;
       color: #555;
@@ -83,6 +93,17 @@
       font-style: italic;
       font-family: 'Open Sans', sans-serif;
     }
+
+    pre {
+      display: block;
+      overflow-x: auto;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      white-space: pre;
+      word-break: normal;
+    }
+
     pre code {
       font-family: monospace;
       font-size: 1rem;
@@ -91,25 +112,15 @@
       border-radius: 4px;
       overflow-x: auto;
     }
+
     footer.footer {
       background-color: #f8f8f8;
       font-size: 0.95rem;
       padding: 2rem 1rem;
     }
-    pre {
-      display: block;           /* ensure it’s a block element */
-      overflow-x: auto;         /* add a horizontal scrollbar if needed */
-      padding: 1rem;            /* match your existing padding */
-      background: #f5f5f5;      /* match your existing background */
-      border-radius: 4px;       /* match your existing radius */
-      white-space: pre;         /* preserve all spacing */
-      word-break: normal;       /* don’t break words */
-    }
-    pre code {
-      display: block;           /* so code fills the pre */
-    }
   </style>
 
+  <!-- Scripts -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script defer src="./static/js/fontawesome.all.min.js"></script>
   <script src="./static/js/bulma-carousel.min.js"></script>
@@ -119,6 +130,7 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
+
 
 <section class="hero">
   <div class="hero-body">
