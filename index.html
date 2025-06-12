@@ -178,6 +178,10 @@
         </ul>
 
       This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics. Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO, and so on.
+
+      <figure>
+        <img src="./static/images/algorithm_box.png" alt="Algorithm." class="teaser-image">
+        </figure>
       </div>
         
       <br><br>
@@ -219,24 +223,27 @@
 
         <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
         <div class="content has-text-justified">
-
+        <p>
         Theoretically, we contribute an information-theoretic justification for training on intermediate-difficulty prompts. 
         Recall that prompts with 0% or 100% pass rates yield zero advantage and hence zero gradient.
         This also applies to the prompts with pass rates close to these extremes. 
-
+        </p>
+        <p>
         More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> \(J(\theta)\) to compute the updated model parameter.
         We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. 
         A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
-        More formally, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
+        More specifically, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
         \[
         \mathbb{E}\left[J(\theta^+)\right] - J(\theta) \geq
         \frac{1}{2} \left\| \nabla_{\theta} J(\theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}}\right).
         \]
-
         Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
+        </p>
+        <p>
         In fact, the pass rate of a prompt is tightly correlated with its SNR.
         In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem. 
-
+        </p>
+        <p>
         <strong>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</strong>
         Fix a prompt. Let \( p \) denote the (expected) pass rate (i.e., the probability that the question is correctly solved) of prompt under the current policy.
         We generate \( N \) completions for the prompt independently.
@@ -249,7 +256,7 @@
         \lim_{p \to 1} \text{SNR} =
         \lim_{p \to 0} \text{SNR} = 0
         \]
-
+      </p>
         This result, together with the fact that the pass rate is tightly correlated with the SNR, is significant in several ways: 
         <ul>
           <li>
