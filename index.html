@@ -7,79 +7,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning</title>
 
-  <!-- Elegant serif font: Merriweather -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap">
-  <style>
-    /* Apply the elegant Merriweather font site-wide */
-    body, h1, h2, h3, h4, h5, h6 {
-      font-family: 'Merriweather', serif;
-    }
-    body {
-      font-size: 18px;
-      line-height: 1.6;
-      color: #333;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 0;
-    }
-    h1.publication-title {
-      font-size: 3em !important;
-      margin-bottom: 0.3em;
-    }
-    h2.title.is-3 {
-      font-size: 2em !important;
-      margin-top: 2em;
-      margin-bottom: 0.5em;
-    }
-    .content,
-    .publication-authors a,
-    .publication-authors span,
-    .publication-links .button,
-    ul li {
-      font-size: 1.125em;
-    }
-    .hero, .section {
-      padding-top: 2em;
-      padding-bottom: 2em;
-    }
-    /* Left-align all figure and table captions */
-    figcaption {
-      text-align: left;
-      font-style: italic;
-      font-size: 1em;
-      margin-top: 0.5em;
-      color: #555;
-    }
-    .teaser-image {
-      max-width: 100%;
-      height: auto;
-      margin: 1em 0;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    pre code {
-      font-family: monospace;
-      font-size: 1em;
-      line-height: 1.4;
-      background: #f5f5f5;
-      padding: 1em;
-      border-radius: 4px;
-      overflow-x: auto;
-      display: block;
-    }
-    footer.footer p {
-      font-size: 1em;
-    }
-  </style>
-
-  <!-- Bulma & other CSS -->
   <link rel="stylesheet" href="./static/css/bulma.min.css">
   <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
   <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
   <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon.svg">
+
+  <!-- Custom formatting only: fonts and sizes -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap');
+    /* html {
+      font-family: 'STIX Two Text', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      background-color: #fafafa;
+      color: #333;
+    } */
+    html {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+      background-color: #fafafa;
+      color: #333;
+    }
+    body {
+      background-color: white;
+      margin: 0;
+      padding: 0;
+    }
+    h1.publication-title,
+    h2.title.is-3 {
+      font-family: 'Playfair Display', serif !important;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    h1.publication-title {
+      font-size: 3rem !important;
+    }
+    h2.title.is-3 {
+      font-size: 2rem !important;
+    }
+    .content,
+    .publication-authors,
+    .publication-links a span,
+    .link-block span {
+      font-size: 1.125rem;
+    }
+    .hero {
+      padding: 2.5rem 1rem;
+      background-color: #f0f0f0;
+    }
+    .section {
+      padding: 3rem 0;
+    }
+    .teaser-image {
+      max-width: 100%;
+      height: auto;
+      margin: 1.5rem auto;
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    figcaption {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 0.5rem;
+      text-align: center;
+      font-style: italic;
+    }
+    pre code {
+      font-family: monospace;
+      font-size: 1rem;
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    footer.footer {
+      background-color: #f8f8f8;
+      font-size: 0.95rem;
+      padding: 2rem 1rem;
+    }
+    pre {
+      display: block;           /* ensure it’s a block element */
+      overflow-x: auto;         /* add a horizontal scrollbar if needed */
+      padding: 1rem;            /* match your existing padding */
+      background: #f5f5f5;      /* match your existing background */
+      border-radius: 4px;       /* match your existing radius */
+      white-space: pre;         /* preserve all spacing */
+      word-break: normal;       /* don’t break words */
+    }
+    pre code {
+      display: block;           /* so code fills the pre */
+    }
+  </style>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script defer src="./static/js/fontawesome.all.min.js"></script>
@@ -109,8 +134,7 @@
             </span>
             <span class="author-block">
               <a href="https://azanette.com">Andrea Zanette</a>
-            </span>
-          </div>
+            </span>                      
           <div class="is-size-5 publication-authors">
             <span class="author-block">UC Berkeley, Carnegie Mellon University</span><br>
           </div>
@@ -118,9 +142,236 @@
             <div class="publication-links">
               <span class="link-block">
                 <a href="https://arxiv.org/pdf/2506.09016" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon"><i class="ai ai-arxiv"></i></span><span>Paper</span>
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>Paper</span>
                 </a>
               </span>
               <span class="link-block">
                 <a href="https://github.com/Zanette-Labs/speed-rl" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon"><svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.
+                  <span class="icon">
+                      <svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://huggingface.co/collections/rqzhang/speed-rl-684a72dfb24ea72540c32fa1" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <svg class="svg-inline--fa fa-database fa-w-14" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="database" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M448 73.143v45.714C448 159.143 347.667 192 224 192S0 159.143 0 118.857V73.143C0 32.857 100.333 0 224 0s224 32.857 224 73.143zM448 176v102.857C448 319.143 347.667 352 224 352S0 319.143 0 278.857V176c48.125 33.143 136.208 48.572 224 48.572S399.874 209.143 448 176zm0 160v102.857C448 479.143 347.667 512 224 512S0 479.143 0 438.857V336c48.125 33.143 136.208 48.572 224 48.572S399.874 369.143 448 336z"></path></svg>
+                  </span>
+                  <span>Datasets</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <div class="content has-text-justified">
+          We introduced <strong>SPEED</strong>, an online curriculum learning framework that accelerates reinforcement learning (RL) training for large reasoning models by training on prompts with a high learning signal.
+  <ul>
+  <li>Traditional RL training often expends most of the compute resources on prompts with low learning signals (pass rates near 0% or 100%), which have low <em>signal-to-noise ratio</em> (SNR) and which may make up most of the training dataset.</li>
+  <li><strong>SPEED</strong> efficiently identifies and excludes these low-SNR prompts <strong>before</strong> creating training batches for the RL trainer.</li>
+  <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR ones).</li>
+  <li>SPEED achieves training speedups <strong>from 2x to 6x</strong> across various benchmarks and training configurations.</li>
+  <li>SPEED is compatible with Rule-based RL algorithms like GRPO, REINFORCE, RLOO, and DAPO.</li>
+</ul>
+<div class="container is-max-desktop">
+  <div class="hero-body">
+    <figure>
+      <img src="./static/images/teaser_figure.png" alt="Teaser image." class="teaser-image">
+      <figcaption>
+         <strong>Figure 1:</strong> SPEED expends some compute (red region, left figure) to identify and exclude low-signal (low-SNR) prompts from the training batch, ensuring the majority of compute is effectively utilized on informative prompts. This yields an average 4× speedup across various benchmarks and training configurations (right figure; see paper for details).
+      </figcaption>
+    </figure>
+  </div>
+</div>
+<p>
+        </div>
+
+        <h2 class="title is-3" id="srt">Introduction</h2>
+        <div class="content has-text-justified">
+        Training large language models (LLMs) with reinforcement learning (RL) against verifiable rewards significantly enhances their reasoning capabilities. 
+        However, such methods remain computationally expensive, primarily due to inefficient uniform sampling of training prompts and the heavy inference costs associated.
+        <ul>
+          <li>In typical datasets (e.g., that used in <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>), many prompts are either trivially easy or excessively difficult relative to the model's current training state.</li>
+          <li>LLMs spend most of the training time on inference, even generating all-correct or all-incorrect completions for those prompts that are either trivially easy or excessively difficult.</li>
+        </ul>
+
+        
+        <figure>
+        <img src="./static/images/passrate_distribution_inference_time.png" alt="Teaser image." class="teaser-image">
+         <figcaption>
+         <strong>Figure 2:</strong> Pass rate distribution of 1000 samples in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). 
+         Right: Average per-step inference and training times while running RLOO on the Qwen2.5-Math-7B model.
+         </figcaption>
+        </figure>
+
+        Intuitively, if the model consistently succeeds or fails, it learns little.
+        Formally, prompts with pass rates near 0% or 100% produce zero gradients since the advantage function approaches zero (e.g., REINFORCE gradient updates) and does not affect the gradient estimate. This can be formally shown as follows:
+        <p>
+        \[
+        \nabla_{\theta} J_\text{prompt}(\theta) =
+        \mathbb{E}_{\text{response} \sim \pi(\cdot \mid \text{prompt})}
+        \left[
+        \underbrace{A(\text{response})}_{=0}
+        \nabla_{\theta} \log \pi(\text{response} \mid \text{prompt})
+        \right]
+        = 0,
+        \quad\quad \text{if the pass rate is } 0\% \text{ or } 100\%.
+        \]
+        </p> 
+        Consequently, we can exclude them.
+
+        However, reliably identifying informative prompts in a general and computationally efficient manner is challenging.
+        <ul>
+          <li><a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a> removes prompts with a 0% or 100% empircal pass rate after generating a large number of completions for each prompt.
+            This becomes computationally infeasible for large datasets as the training cost is dominated by the inference phase.</li>
+          <li><strong>SPEED (Our proposed method)</strong> efficiently identifies and excludes low-SNR prompts to avoid these high inference costs and achieve <strong>substantial real-time speedups</strong>.</li>
+        </ul>
+
+        <br><br>
+
+        <h2 class="title is-3" id="srt">SPEED-RL: Algorithm Design</h2>
+        <div class="content has-text-justified">
+        We introduce <strong>Selective Prompting with Efficient Estimation of Difficulty (SPEED)</strong>, which implements a curriculum learning strategy that efficiently screens prompts to identify those with intermediate pass rates—thus maximizing the signal-to-noise ratio (SNR)—without full inference.
+        <ul>
+          <li>
+            <strong>Screening Phase:</strong> Generate a small number (e.g., <code>N<sub>init</sub> = 4</code>) of completions for each prompt. Prompts clearly at extremes (0% or 100%) pass rate are immediately excluded.
+          </li>
+          <li>
+            <strong>Continuation Phase:</strong> Perform extensive inference (e.g., <code>N<sub>cont</sub> = 20</code> additional completions per prompt) only on the intermediate-difficulty prompts identified as informative.
+          </li>
+        </ul>
+
+      This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics. Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO, and so on.
+
+      <figure>
+        <img src="./static/images/algorithm_box.png" alt="Algorithm." class="teaser-image">
+        </figure>
+      </div>
+        
+      <br><br>
+        <h2 class="title is-3" id="srt">Experiments</h2>
+        <div class="content has-text-justified"> 
+        We demonstrate SPEED's efficacy by comparing the <strong>wall-clock time</strong> to achieve certain target performance for baseline RL algorithms and for SPEED variants. 
+
+        <ul>
+          <li>
+            Baseline: <a href="https://arxiv.org/abs/2402.14740" target="_blank" rel="noopener noreferrer">RLOO</a> and <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>. We compare RLOO vs SPEED-RLOO, and DAPO vs SPEED-DAPO.
+          </li>
+          <li>
+            Training Dataset: <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener noreferrer">DeepScaleR</a>, <a href="https://huggingface.co/datasets/AI-MO/NuminaMath-TIR" target="_blank" rel="noopener noreferrer">NuminaMath</a>, and <a href="https://huggingface.co/datasets/BytedTsinghua-SIA/DAPO-Math-17k" target="_blank" rel="noopener noreferrer">DAPO-17k</a> (1k held-out set excluded)
+          </li>
+          <li>
+            Benchmarks: 1k held-out set from DAPO-17k, MATH500, AMC23, AIME2024, and AIME 2025. See <a href="https://huggingface.co/collections/rqzhang/speed-rl-684a72dfb24ea72540c32fa1" target="_blank" rel="noopener noreferrer">here</a>.
+          </li>
+        </ul>
+        
+        Empirically, SPEED variants substantially accelerate the training compared to the baseline methods for <strong>2x - 6x times</strong>.
+        For detailed empirical results, please refer to our full paper.
+        </div>
+
+        <figure>
+          <img src="./static/images/main_figure.png" alt="main figure." class="teaser-image">
+           <figcaption>
+           <strong>Figure 3:</strong> Validation accuracy on various mathematical reasoning benchmarks for SPEED-variants of RL algorithms, and base RL algorithms. Top: RLOO versus SPEED-RLOO; bottom: DAPO versus SPEED-DAPO. The initial model used is Qwen2.5-Math-7B, trained on the DeepScaleR dataset.
+           </figcaption>
+          </figure>
+          
+          <figure>
+            <img src="./static/images/main_table.png" alt="main table." class="teaser-image">
+             <figcaption>
+             <strong>Table 1:</strong> Wall-clock training hours needed for each model to reach a target accuracy on its respective benchmark. For the Qwen-Math-1.5B model, the targets are 0.30 on DAPO-1k, 0.70 on MATH500, 0.4 on AMC2023, and 0.10 on AIME. For the larger Qwen2.5-Math-7B model, the thresholds increase to 0.45, 0.80, 0.55, and 0.18 for the same datasets, respectively. Validation time and checkpoint-saving overhead are excluded. Values in parentheses give the corresponding wall-clock speed-ups.
+             The dagger means the performance has not reached the threshold during the entire training process. 
+             The average speedups reported across benchmarks and training configurations are computed as the simple arithmetic mean of individual speedup values.
+             </figcaption>
+            </figure>
+
+        <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
+        <div class="content has-text-justified">
+        <p>
+        Theoretically, we contribute an information-theoretic justification for training on intermediate-difficulty prompts. 
+        Recall that prompts with 0% or 100% pass rates yield zero advantage and hence zero gradient.
+        This also applies to the prompts with pass rates close to these extremes. 
+        </p>
+        <p>
+        More specifically, let \(J(\theta)\) be the objective function (on some prompt \(x\)). We usually compute some <em>stochastic gradient estimator</em> \(J(\theta)\) to compute the updated model parameter.
+        We quantify informational value through the <strong>Signal-to-Noise Ratio</strong> (SNR)—defined as the ratio between the squared norm of the gradient estimator and its variance. 
+        A corollary of the standard SGD analysis shows that the expected reward improvement can be lower-bounded by a function of the SNR. 
+        More specifically, let \(\theta\) be the model parameter and \(\theta^{+}\) be the updated model parameter. Then, given the stochastic gradient estimator is unbiased and \(J(\theta)\) is 1-smooth, the expected reward improvement can be lower-bounded by:
+        \[
+        \mathbb{E}\left[J(\theta^+)\right] - J(\theta) \geq
+        \frac{1}{2} \left\| \nabla_{\theta} J(\theta) \right\|^2 \left(1 - \frac{1}{\text{SNR}}\right).
+        \]
+        Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
+        </p>
+        <p>
+        In fact, the pass rate of a prompt is tightly correlated with its SNR.
+        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem. 
+        </p>
+        <p>
+        <strong>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</strong>
+        Fix a prompt. Let \( p \) denote the (expected) pass rate (i.e., the probability that the question is correctly solved) of prompt under the current policy.
+        We generate \( N \) completions for the prompt independently.
+        The SNR of the stochastic gradient estimator for \( N \geq 3 \) and \( p < 1/4 \) or \( p > 3/4 \) satisfies the bound:
+        \[
+        \text{SNR} \leq 4N \cdot p (1 - p)
+        \]
+        Moreover, for fixed \( N \), we have:
+        \[
+        \lim_{p \to 1} \text{SNR} =
+        \lim_{p \to 0} \text{SNR} = 0
+        \]
+      </p>
+        This result, together with the fact that the pass rate is tightly correlated with the SNR, is significant in several ways: 
+        <ul>
+          <li>
+            It explicitly quantifies how much informative signal (relative to noise) a single training step provides as a direct function of pass rate.
+          </li>
+          <li>
+            It confirms an important intuition: prompts with very low pass rates (near 0%) or very high pass rates (near 100%) both yield vanishing SNR. Such prompts provide negligible useful training signal while potentially introducing detrimental variance in parameter updates.
+          </li>
+          <li>
+            It suggests that <strong>optimal curricula must explicitly prioritize intermediate-difficulty prompts</strong> to maximize learning signal and effectiveness.
+          </li>
+        </ul>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code> 
+      @misc{zhang2025speedrlfastertrainingreasoning,
+            title={SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning}, 
+            author={Ruiqi Zhang and Daman Arora and Song Mei and Andrea Zanette},
+            year={2025},
+            eprint={2506.09016},
+            archivePrefix={arXiv},
+            primaryClass={cs.LG},
+            url={https://arxiv.org/abs/2506.09016}, 
+      }
+</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <p>
+        Corresponding Authors: <a href="mailto:rqzhang@berkeley.edu">Ruiqi Zhang</a>, <a href="mailto:zanette@cmu.edu">Andrea Zanette</a>.<br>
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
