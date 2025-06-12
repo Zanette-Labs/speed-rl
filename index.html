@@ -176,7 +176,6 @@
             <strong>Continuation Phase:</strong> Perform extensive inference (e.g., <code>N<sub>cont</sub> = 20</code> additional completions per prompt) only on the intermediate-difficulty prompts identified as informative.
           </li>
         </ul>
-      </div>
 
       This targeted approach allocates the majority of compute to high-value prompts. To avoid inference overhead from multiple calls, SPEED combines both phases into a single inference batch: simultaneously completing the continuation phase for current prompts and preliminary screening phase for future prompts within one single call to the efficient serving (e.g., vLLM). See our paper for additional implementation specifics. Moreover, SPEED integrates seamlessly with popular rule-based RL algorithms, including RLOO, GRPO, DAPO, and so on.
       </div>
@@ -202,9 +201,21 @@
         For detailed empirical results, please refer to our full paper.
         </div>
 
-        <center>
-          <img src="./static/images/main_results.png" alt="main_results" width="100%" class="main_results">
-        </center>
+        <figure>
+          <img src="./static/images/main_figure.png" alt="main figure." class="teaser-image">
+           <figcaption style="text-align: center; font-style: italic; margin-top: 0.5em;">
+           <br> <strong>Figure 3:</strong> Validation accuracy on various mathematical reasoning benchmarks for SPEED-variants of RL algorithms, and base RL algorithms. Top: RLOO versus SPEED-RLOO; bottom: DAPO versus SPEED-DAPO. The initial model used is Qwen2.5-Math-7B, trained on the DeepScaleR dataset.
+           </figcaption>
+          </figure>
+          
+          <figure>
+            <img src="./static/images/main_table.png" alt="main table." class="teaser-image">
+             <figcaption style="text-align: center; font-style: italic; margin-top: 0.5em;">
+             <br> <strong>Table 1:</strong> Wall‑clock training hours needed for each model to reach a target accuracy on its respective benchmark. For the Qwen‑Math‑1.5B model, the targets are 0.30 on DAPO‑1k, 0.70 on MATH500, 0.4 on AMC2023, and 0.10 on AIME. For the larger Qwen2.5‑Math‑7B model, the thresholds increase to 0.45, 0.80, 0.55, and 0.18 for the same datasets, respectively. Validation time and checkpoint‑saving overhead are excluded. Values in parentheses give the corresponding wall‑clock speed‑ups.
+             The dagger means the performance has not reached the threshold during the entire training process. 
+             The average speedups reported across benchmarks and training configurations are computed as the simple arithmetic mean of individual speedup values.
+             </figcaption>
+            </figure>
 
         <h2 class="title is-3" id="srt">Insights: Why Moderately Difficult Prompts?</h2>
         <div class="content has-text-justified">
@@ -222,75 +233,50 @@
 
         Therefore, if the SNR approaches zero, variance dominates and little improvement is expected from a single step.
         In fact, the pass rate of a prompt is tightly correlated with its SNR.
-        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem.
+        In this paper, we show that the prompts with extreme pass rates (near 0% or 100%) have very low SNR and thus little informational value, while those with moderate pass rates have high SNR and thus high informational value by the following theorem. 
 
+        <h3>Theorem (Fundamental Connection between SNR and Pass Rate, Informal)</h3>
+        Fix a prompt. Let \( p \) denote the (expected) pass rate (i.e., the probability that the question is correctly solved) of prompt under the current policy.
+        We generate \( N \) completions for the prompt independently.
+        The SNR of the stochastic gradient estimator for \( N \geq 3 \) and \( p < \frac{1}{4} \) or \( p > \frac{3}{4} \) satisfies the bound:
+        \[
+        \text{SNR} \leq 4N \cdot p_x(\theta) \cdot (1 - p_x(\theta))
+        \]
+        Moreover, for fixed \( N \), we have:
+        \[
+        \lim_{p_x(\theta) \to 1} \text{SNR} =
+        \lim_{p_x(\theta) \to 0} \text{SNR} = 0
+        \]
 
-<p>
-  A straightforward technique to increase the <strong>SNR</strong> is to simply increase the number of sampled rollouts.
-  Doing so reduces the variance of the gradient estimator—the denominator of the SNR.
-  However, this straightforward approach involves additional compute.
-</p>
-
-<p>
-  In this work, instead, we select the most informative prompts to enhance the SNR during training,
-  thus framing curriculum learning as a variance reduction technique.
-  More precisely, we establish an explicit link between the gradient estimator’s SNR and the prompt pass rate
-</p>
-
-\[
-p(x) = \mathbb{E}_{y \sim \pi(\cdot \mid x)} \left[ \mathbb{I}(r(y) = 1) \right]
-\]
-
-<p>
-  for a given prompt \( x \). Note that the pass rate depends on both the prompt and the generative model.
-  We obtain the following fundamental result, whose proof is deferred to the appendix.
-</p>
-
-<h3>Theorem (Fundamental Connection between SNR and Pass Rate)</h3>
-
-<p><em>Fix a prompt</em> \( x \).<br>
-Let \( p_x(\theta) \) denote the pass rate of prompt \( x \) under the current policy \( \pi(\cdot \mid x) \):
-</p>
-
-\[
-p_x(\theta) = \mathbb{E}_{y \sim \pi(\cdot \mid x)} \left[ \mathbb{I}(r(y) = 1) \right]
-\]
-
-<p>
-  The SNR of the stochastic gradient estimator (defined earlier) for \( N \geq 3 \) and
-  \( p < \frac{1}{4} \) or \( p > \frac{3}{4} \) satisfies the bound:
-</p>
-
-\[
-\text{SNR} \leq 4N \cdot p_x(\theta) \cdot (1 - p_x(\theta))
-\]
-
-<p>
-  Moreover, for fixed \( N \), we have:
-</p>
-
-\[
-\lim_{p_x(\theta) \to 1} \text{SNR} =
-\lim_{p_x(\theta) \to 0} \text{SNR} = 0
-\]
-
-<p>
-  This result is significant because it explicitly quantifies how much informative signal (relative to noise)
+        This result, together with the fact that the pass rate is tightly correlated with the SNR, is significant in several ways: 
+        <ul>
+          <li>
+            It explicitly quantifies how much informative signal (relative to noise) a single training step provides as a direct function of pass rate.
+          </li>
+          <li>
+            It confirms an important intuition: prompts with very low pass rates (near 0%) or very high pass rates (near 100%) both yield vanishing SNR. Such prompts provide negligible useful training signal while potentially introducing detrimental variance in parameter updates.
+          </li>
+          <li>
+            It suggests that optimal curricula must explicitly prioritize intermediate-difficulty prompts to maximize learning signal and effectiveness.
+          </li>
+        </ul>
+  
+  
+  <!-- because it explicitly quantifies how much informative signal (relative to noise)
   a single training step provides as a direct function of pass rate.
   Crucially, the theorem confirms an important intuition: prompts with very low
   (\( p_x(\theta) \approx 0\% \)) or very high (\( p_x(\theta) \approx 100\% \)) pass rates both yield vanishing SNR.
-  Such prompts provide negligible useful training signal while potentially introducing detrimental variance in parameter updates.
-</p>
+  
 
 <div style="text-align:center; font-style: italic;">
   Optimal curricula must explicitly prioritize intermediate-difficulty prompts <br>
   in order to maximize learning signal and effectiveness.
-</div>
+</div> -->
 
-</div></div></div></div></section>
+<!-- </div></div></div></div></section> -->
 
 
-<hr>
+<!-- <hr> -->
 
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
@@ -312,17 +298,17 @@ p_x(\theta) = \mathbb{E}_{y \sim \pi(\cdot \mid x)} \left[ \mathbb{I}(r(y) = 1) 
 
 <footer class="footer">
   <div class="container">
-    <div class="content has-text-centered">
+    <!-- <div class="content has-text-centered">
       <a class="icon-link" href="https://arxiv.org/abs/2505.21444">
         <svg class="svg-inline--fa fa-file-pdf fa-w-12" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="file-pdf" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg=""><path fill="currentColor" d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z"></path></svg><!-- <i class="fas fa-file-pdf"></i> Font Awesome fontawesome.com -->
-      </a>
+      <!-- </a>
       <a class="icon-link" href="https://github.com/tajwarfahim/srt" disabled="">
         <svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" data-fa-i2svg=""><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg><!-- <i class="fab fa-github"></i> Font Awesome fontawesome.com -->
-      </a>
-    </div>
+      <!-- </a>
+    </div> -->
     <div class="columns is-centered">
       <p>
-        Corresponding Author: <a href="rqzhang@berkeley.edu">Ruiqi Zhang</a>, <a href="mailto:zanette@cmu.edu">Andrea Zanette</a>.<br>
+        Corresponding Authors: <a href="rqzhang@berkeley.edu">Ruiqi Zhang</a>, <a href="mailto:zanette@cmu.edu">Andrea Zanette</a>.<br>
       </p>
     </div>
   </div>
