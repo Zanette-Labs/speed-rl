@@ -1,71 +1,78 @@
 <!DOCTYPE html>
-<html class="fontawesome-i2svg-active fontawesome-i2svg-complete"><head>
+<html class="fontawesome-i2svg-active fontawesome-i2svg-complete">
+<head>
   <meta charset="utf-8">
   <meta name="description" content="A reinforcement learning framework where LLMs generate their own supervision signal via majority voting">
   <meta name="keywords" content="LLM, Reasoning, Self-Improvement">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning</title>
 
-  <!-- Overleaf-like font: Latin Modern -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lmroman10@1.0.0/css/lmroman10.css">
+  <!-- Elegant serif font: Merriweather -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap">
   <style>
+    /* Apply the elegant Merriweather font site-wide */
+    body, h1, h2, h3, h4, h5, h6 {
+      font-family: 'Merriweather', serif;
+    }
     body {
-      font-family: 'lmroman10', serif;
-      font-size: 18px; /* larger base font size */
+      font-size: 18px;
       line-height: 1.6;
       color: #333;
+      background-color: #fafafa;
+      margin: 0;
+      padding: 0;
     }
-    .content,
-    .publication-authors,
-    .publication-links,
-    .figcaption,
-    ul li {
-      font-size: 1.125em;
-    }
-    h1.title {
-      font-family: 'lmroman10', serif;
-      font-size: 3em;
+    h1.publication-title {
+      font-size: 3em !important;
       margin-bottom: 0.3em;
     }
-    h2.title {
-      font-family: 'lmroman10', serif;
-      font-size: 2em;
+    h2.title.is-3 {
+      font-size: 2em !important;
       margin-top: 2em;
       margin-bottom: 0.5em;
     }
-    .hero,
-    .section {
+    .content,
+    .publication-authors a,
+    .publication-authors span,
+    .publication-links .button,
+    ul li {
+      font-size: 1.125em;
+    }
+    .hero, .section {
       padding-top: 2em;
       padding-bottom: 2em;
     }
-    .publication-authors a,
-    .publication-authors span {
-      font-size: 1.125em;
-    }
-    .publication-links .button {
-      font-size: 1em;
-      padding: 0.75em 1em;
-    }
-    .teaser-image {
-      max-width: 100%;
-      height: auto;
-      margin: 1em 0;
-    }
+    /* Left-align all figure and table captions */
     figcaption {
+      text-align: left;
       font-style: italic;
       font-size: 1em;
       margin-top: 0.5em;
       color: #555;
     }
+    .teaser-image {
+      max-width: 100%;
+      height: auto;
+      margin: 1em 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
     pre code {
+      font-family: monospace;
       font-size: 1em;
       line-height: 1.4;
+      background: #f5f5f5;
+      padding: 1em;
+      border-radius: 4px;
+      overflow-x: auto;
+      display: block;
     }
     footer.footer p {
       font-size: 1em;
     }
   </style>
 
+  <!-- Bulma & other CSS -->
   <link rel="stylesheet" href="./static/css/bulma.min.css">
   <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
   <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
@@ -92,33 +99,28 @@
           <h1 class="title is-1 publication-title">SPEED-RL: Faster Training of Reasoning Models via Online Curriculum Learning</h1>
           <div class="is-size-5 publication-authors">
             <span class="author-block">
-              <a href="https://rqzhangberkeley.github.io">Ruiqi \u Zhang</a>,
+              <a href="https://rqzhangberkeley.github.io">Ruiqi Zhang</a>,
             </span>
             <span class="author-block">
               <a href="https://daman1209arora.github.io">Daman Arora</a>,
             </span>
             <span class="author-block">
-              <a href="https://www.stat.berkeley.edu/~songmei/">Song \u Mei</a>,
+              <a href="https://www.stat.berkeley.edu/~songmei/">Song Mei</a>,
             </span>
             <span class="author-block">
               <a href="https://azanette.com">Andrea Zanette</a>
-            </span>                      
-
+            </span>
+          </div>
           <div class="is-size-5 publication-authors">
             <span class="author-block">UC Berkeley, Carnegie Mellon University</span><br>
           </div>
-
           <div class="column has-text-centered">
             <div class="publication-links">
               <span class="link-block">
                 <a href="https://arxiv.org/pdf/2506.09016" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>Paper</span>
+                  <span class="icon"><i class="ai ai-arxiv"></i></span><span>Paper</span>
                 </a>
               </span>
               <span class="link-block">
                 <a href="https://github.com/Zanette-Labs/speed-rl" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <svg class="svg-inline--fa fa-github fa-w
+                  <span class="icon"><svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.
