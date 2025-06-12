@@ -94,13 +94,13 @@
     <div class="columns is-centered">
       <div class="column is-full-width">
         <div class="content has-text-justified">
-          We introduced <strong>SPEED</strong>, an online curriculum learning framework that accelerates reinforcement learning (RL) training for reasoning models
-by training on prompts with a high learning signal.
+          We introduced <strong>SPEED</strong>, an online curriculum learning framework that accelerates reinforcement learning (RL) training for large reasoning models by training on prompts with a high learning signal.
   <ul>
   <li>Traditional RL training often expends most of the compute resources on prompts with low learning signals (pass rates near 0% or 100%), which have low <em>signal-to-noise ratio</em> (SNR) and which may make up most of the training dataset.</li>
   <li><strong>SPEED</strong> efficiently identifies and excludes these low-SNR prompts <strong>before</strong> creating training batches for the RL trainer.</li>
-  <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR).</li>
-  <li>SPEED is compatible with RL algorithms like GRPO, REINFORCE, RLOO, and DAPO, achieves training speedups from <strong>2x to 6x</strong>.</li>
+  <li>This ensures computational resources (inference and gradient updates) are focused on useful prompts (high-SNR ones).</li>
+  <li>SPEED achieves training speedups <strong>from 2x to 6x</strong> across various benchmarks and training configurations.</li>
+  <li>SPEED is compatible with RL algorithms like GRPO, REINFORCE, RLOO, and DAPO.</li>
 </ul>
 <div class="container is-max-desktop">
   <div class="hero-body">
@@ -122,14 +122,18 @@ by training on prompts with a high learning signal.
         
         <br><br>
 
-        <h2 class="title is-3" id="srt">Overview</h2>
+        <h2 class="title is-3" id="srt">Introduction</h2>
         <div class="content has-text-justified">
         Training large language models (LLMs) with reinforcement learning (RL) against verifiable rewards significantly enhances their reasoning capabilities. 
-        However, such methods remain computationally expensive, primarily due to inefficient uniform sampling of training prompts.
-        In typical datasets (e.g., that used in <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>), many prompts are either trivially easy or excessively difficult relative to the model's current training state.
+        However, such methods remain computationally expensive, primarily due to inefficient uniform sampling of training prompts and the heavy inference costs associated.
+        <ul>
+          <li>In typical datasets (e.g., that used in <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>), many prompts are either trivially easy or excessively difficult relative to the model's current training state.</li>
+          <li>LLMs spend most of the training time on inference, even generating all-correct or all-incorrect completions for those prompts that are either trivially easy or excessively difficult.</li>
+        </ul>
+
         
         <figure>
-        <img src="./static/images/passrate_distribution_inference_time.pdf" alt="Teaser image." class="teaser-image">
+        <img src="./static/images/passrate_distribution_inference_time.png" alt="Teaser image." class="teaser-image">
          <figcaption style="text-align: center; font-style: italic; margin-top: 0.5em;">
          <br> Pass rate distribution of 1000 samples in DAPO-17k evaluated by Qwen2.5-Math-1.5B (left) and Qwen2.5-Math-7B (middle). 
          Right: Average per-step inference and training times while running RLOO on the Qwen2.5-Math-7B model.
@@ -139,17 +143,17 @@ by training on prompts with a high learning signal.
         Intuitively, if the model consistently succeeds or fails, it learns little.
         Formally, prompts with pass rates near 0% or 100% produce zero gradients since the advantage function approaches zero (e.g., REINFORCE gradient updates):
         <p>
-\[
-\nabla_{\theta} J_\text{prompt}(\theta) =
-\mathbb{E}_{\text{response} \sim \pi(\cdot \mid \text{prompt})}
-\left[
-\underbrace{A(\text{response})}_{=0}
-\nabla_{\theta} \log \pi(\text{response} \mid \text{prompt})
-\right]
-= 0,
-\quad\quad \text{if the pass rate is } 0\% \text{ or } 100\%.
-\]
-</p> 
+        \[
+        \nabla_{\theta} J_\text{prompt}(\theta) =
+        \mathbb{E}_{\text{response} \sim \pi(\cdot \mid \text{prompt})}
+        \left[
+        \underbrace{A(\text{response})}_{=0}
+        \nabla_{\theta} \log \pi(\text{response} \mid \text{prompt})
+        \right]
+        = 0,
+        \quad\quad \text{if the pass rate is } 0\% \text{ or } 100\%.
+        \]
+        </p> 
         Consequently, excluding these prompts does not alter the expected gradient direction and can be thus removed, a point recognized by the dynamic sampling approach of <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO</a>, which removes prompts empirically estimated at 0% or 100% pass rate.
         However, in order to reliably estimate the pass rate,  demands extensive inference computations, significantly increasing costs (above figure, right panel). 
 
